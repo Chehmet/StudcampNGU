@@ -1,4 +1,4 @@
-Конечно. Вот короткое и понятное словесное описание этой задачи и уравнений.
+Описание и объяснение задачи с борда ментора: https://board.vk.com/?uid=a71317e5-4c3a-40c9-835f-c42ada04c3e7
 
 ### Общее описание задачи
 
@@ -39,7 +39,5 @@
 - https://arxiv.org/pdf/2010.05761 
 
 Платформа для ресерчей: https://platform.futurehouse.org/
-
-Board: https://board.vk.com/?uid=a71317e5-4c3a-40c9-835f-c42ada04c3e7
 
 Connected papers: https://www.connectedpapers.com/
