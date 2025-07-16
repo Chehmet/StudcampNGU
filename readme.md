@@ -41,3 +41,5 @@
 Платформа для ресерчей: https://platform.futurehouse.org/
 
 Board: https://board.vk.com/?uid=a71317e5-4c3a-40c9-835f-c42ada04c3e7
+
+Connected papers: https://www.connectedpapers.com/
