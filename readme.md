@@ -31,8 +31,11 @@
 3.  В итоге, наивная модель, которая полагалась на `X_env`, покажет на тесте **очень плохой результат**.
 4.  **Правильная (робастная) модель** должна в процессе обучения понять, что связь `X_inv → Y` стабильна во всех обучающих средах, а связь `X_env` с `Y` — нет. Такая модель научится **игнорировать** `X_env` и будет показывать хороший результат даже на тестовых данных с огромным `pe`.
 
-https://docs.yandex.ru/docs/view?tm=1752653038&tld=ru&lang=en&name=Lin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&text=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant&url=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&lr=65&mime=pdf&l10n=ru&sign=a5bb9e1f46de870455aa59b19b833296&keyno=0&nosw=1&serpParams=tm%3D1752653038%26tld%3Dru%26lang%3Den%26name%3DLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26text%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant%26url%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26lr%3D65%26mime%3Dpdf%26l10n%3Dru%26sign%3Da5bb9e1f46de870455aa59b19b833296%26keyno%3D0%26nosw%3D1
+Статьи:
+- https://docs.yandex.ru/docs/view?tm=1752653038&tld=ru&lang=en&name=Lin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&text=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant&url=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&lr=65&mime=pdf&l10n=ru&sign=a5bb9e1f46de870455aa59b19b833296&keyno=0&nosw=1&serpParams=tm%3D1752653038%26tld%3Dru%26lang%3Den%26name%3DLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26text%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant%26url%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26lr%3D65%26mime%3Dpdf%26l10n%3Dru%26sign%3Da5bb9e1f46de870455aa59b19b833296%26keyno%3D0%26nosw%3D1
 
-https://arxiv.org/abs/1907.02893
+- https://arxiv.org/abs/1907.02893
 
-https://platform.futurehouse.org/
+Платформа для ресерчей: https://platform.futurehouse.org/
+
+Board: https://board.vk.com/?uid=a71317e5-4c3a-40c9-835f-c42ada04c3e7
