@@ -1,22 +1,21 @@
 Описание и объяснение задачи с борда ментора: https://board.vk.com/?uid=a71317e5-4c3a-40c9-835f-c42ada04c3e7
 
-### Общее описание задачи
+Статьи:
+- https://docs.yandex.ru/docs/view?tm=1752653038&tld=ru&lang=en&name=Lin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&text=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant&url=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&lr=65&mime=pdf&l10n=ru&sign=a5bb9e1f46de870455aa59b19b833296&keyno=0&nosw=1&serpParams=tm%3D1752653038%26tld%3Dru%26lang%3Den%26name%3DLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26text%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant%26url%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26lr%3D65%26mime%3Dpdf%26l10n%3Dru%26sign%3Da5bb9e1f46de870455aa59b19b833296%26keyno%3D0%26nosw%3D1
 
-Это задача по созданию искусственных данных для проверки способности модели машинного обучения отличать **настоящие (стабильные) закономерности** от **ложных (изменчивых) корреляций**.
+- https://arxiv.org/abs/1907.02893
+### Общее описание задачи
 
 **Основная цель** — обучить модель, которая будет хорошо работать не только на похожих данных, но и на данных из совершенно новых, непредсказуемых условий (это называется **обобщением на сдвиг данных** или *out-of-distribution generalization*).
 
 ---
-
-### Что происходит в каждом уравнении
-
-#### 1. `X_inv ~ N(E₂, I₂)` — **Инвариантные (хорошие) признаки**
+#### 1. `X_inv ~ N(E₂, I₂)` — **Инвариантные признаки**
 *   **Что происходит:** Создаются два признака (`X_inv`), которые не зависят ни от каких внешних условий. Они представляют собой **стабильную, фундаментальную информацию**. В реальном мире это могут быть физические свойства объекта (вес, размер).
 
-#### 2. `Y = 1ᵀ · X_inv + N(0, 0.1)` — **Целевая переменная (то, что мы предсказываем)**
+#### 2. `Y = 1ᵀ · X_inv + N(0, 0.1)` — **Целевая переменная**
 *   **Что происходит:** Вычисляется целевое значение `Y`. Оно зависит **только** от "хороших" признаков `X_inv` (знак `1ᵀ` означает, что компоненты `X_inv` просто суммируются) и небольшого случайного шума. Это и есть та **истинная, причинно-следственная связь**, которую должна выучить модель.
 
-#### 3. `X_env = Y + N(E₂, pe · I₂)` — **Зависящие от среды (обманчивые) признаки**
+#### 3. `X_env = Y + N(E₂, pe · I₂)` — **Зависящие от среды признаки**
 *   **Что происходит:** Создаются два "плохих" признака (`X_env`). Главный трюк в том, что они создаются **на основе ответа `Y`**. Это создает сильную корреляцию между `X_env` и `Y`, но эта связь — ложная (не причинная).
 *   Параметр `pe` контролирует силу шума: чем он больше, тем слабее и ненадежнее эта ложная связь.
 
@@ -31,10 +30,7 @@
 3.  В итоге, наивная модель, которая полагалась на `X_env`, покажет на тесте **очень плохой результат**.
 4.  **Правильная (робастная) модель** должна в процессе обучения понять, что связь `X_inv → Y` стабильна во всех обучающих средах, а связь `X_env` с `Y` — нет. Такая модель научится **игнорировать** `X_env` и будет показывать хороший результат даже на тестовых данных с огромным `pe`.
 
-Статьи:
-- https://docs.yandex.ru/docs/view?tm=1752653038&tld=ru&lang=en&name=Lin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&text=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant&url=https%3A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf&lr=65&mime=pdf&l10n=ru&sign=a5bb9e1f46de870455aa59b19b833296&keyno=0&nosw=1&serpParams=tm%3D1752653038%26tld%3Dru%26lang%3Den%26name%3DLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26text%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant%26url%3Dhttps%253A%2F%2Fopenaccess.thecvf.com%2Fcontent%2FCVPR2022%2Fpapers%2FLin_Bayesian_Invariant_Risk_Minimization_CVPR_2022_paper.pdf%26lr%3D65%26mime%3Dpdf%26l10n%3Dru%26sign%3Da5bb9e1f46de870455aa59b19b833296%26keyno%3D0%26nosw%3D1
 
-- https://arxiv.org/abs/1907.02893
 
 - https://arxiv.org/pdf/2010.05761 
 
