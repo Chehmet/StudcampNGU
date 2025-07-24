@@ -1,21 +1,22 @@
 import streamlit as st
 from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
 import torch
+import os
 
 # --- КОНФИГУРАЦИЯ ---
-# Укажите путь к папке, где лежит ваш лучший model.safetensors
-# Я предполагаю, что вы сохранили лучшую модель в 'piiranha-finetuned-logs/best_model'
-MODEL_PATH = "best_model"
-DEVICE = 0 if torch.cuda.is_available() else -1 # 0 для GPU, -1 для CPU
+# 1. Создаем словарь с путями к вашим трем моделям.
+#    Ключ - это название, которое увидит пользователь.
+#    Значение - это путь к папке с файлами модели.
+#    !!! УБЕДИТЕСЬ, ЧТО ЭТИ ПУТИ ВЕРНЫЕ !!!
+MODELS = {
+    "Бейс (Base)": "models/best_model",
+    "ИРМ (IRM)": "models/trained_model_irm",
+    "БИРМ (BIRM)": "models/trained_model_birm/trained_model_birm",
+}
+# Определяем устройство: GPU, если доступно, иначе CPU
+DEVICE = 0 if torch.cuda.is_available() else -1
 
-# --- CSS Стили для эстетики ---
-# Цвета:
-# Фон: #2c2f38
-# Основной текст: #e0e0e0
-# Акцент/заголовки: #6c73ff
-# Фон инпутов: #34374f
-# Маскированный текст: #ff6565 (красноватый для акцента)
-
+# --- CSS Стили для эстетики (без изменений) ---
 page_style = """
 <style>
 /* Основной фон и шрифт */
@@ -26,6 +27,16 @@ body, .main {
 h1, h2, h3 {
     color: #6c73ff;
     font-family: 'Segoe UI', sans-serif;
+}
+/* Стилизация радио-кнопок на боковой панели */
+.stRadio [role=radiogroup]{
+    align-items: stretch;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #34374f;
+}
+.stRadio [role=radio] {
+    margin: 5px;
 }
 
 /* Стилизация текстового поля для ввода */
@@ -47,6 +58,7 @@ h1, h2, h3 {
     border: none;
     padding: 10px 20px;
     font-weight: bold;
+    width: 100%; /* Кнопка на всю ширину */
 }
 .stButton>button:hover {
     background-color: #5a61e0;
@@ -79,18 +91,23 @@ h1, h2, h3 {
 .entity-table td {
     border-bottom: 1px solid #4a4e69;
 }
-
 </style>
 """
 
 # --- Кэширование модели для быстрой загрузки ---
+# Streamlit будет кэшировать результат для каждого уникального `path`
 @st.cache_resource
 def load_model(path):
-    """Загружает модель и токенизатор один раз и кэширует их."""
+    """Загружает модель и токенизатор по указанному пути и кэширует их."""
+    st.info(f"Загрузка модели из папки: '{path}'...")
+    # Проверяем, существует ли путь
+    if not os.path.isdir(path):
+        st.error(f"Ошибка: Папка с моделью не найдена по пути '{path}'.")
+        st.warning("Пожалуйста, проверьте пути в словаре MODELS в файле app.py.")
+        return None
     try:
         model = AutoModelForTokenClassification.from_pretrained(path)
         tokenizer = AutoTokenizer.from_pretrained(path)
-        # aggregation_strategy="simple" объединяет B- и I- токены в одну сущность (например, B-PASSWORD + I-PASSWORD -> PASSWORD)
         pii_pipeline = pipeline(
             "token-classification",
             model=model,
@@ -98,10 +115,11 @@ def load_model(path):
             aggregation_strategy="simple",
             device=DEVICE,
         )
+        st.success(f"Модель из '{path}' успешно загружена.")
         return pii_pipeline
     except Exception as e:
-        st.error(f"Ошибка загрузки модели: {e}")
-        st.info("Убедитесь, что путь к модели верный и в папке есть все необходимые файлы (config.json, model.safetensors, tokenizer.json и т.д.)")
+        st.error(f"Ошибка загрузки модели из '{path}': {e}")
+        st.warning("Убедитесь, что в папке есть все необходимые файлы (config.json, model.safetensors, tokenizer.json и т.д.)")
         return None
 
 # --- Основная функция для маскирования ---
@@ -111,9 +129,6 @@ def mask_log(pii_pipeline, text):
         return "", []
 
     entities = pii_pipeline(text)
-    
-    # Сортируем сущности по позиции в тексте в обратном порядке
-    # чтобы замена не сбивала индексы последующих сущностей
     sorted_entities = sorted(entities, key=lambda e: e["start"], reverse=True)
     
     masked_text = text
@@ -125,55 +140,85 @@ def mask_log(pii_pipeline, text):
         start = entity["start"]
         end = entity["end"]
         
-        # Создаем маску, например [PASSWORD]
-        mask = f"[{label}]"
+        # Создаем маску в верхнем регистре, например [PASSWORD]
+        mask = f"[{label.upper()}]"
         
-        # Заменяем PII в тексте на маску
         masked_text = masked_text[:start] + mask + masked_text[end:]
+        found_pii.append({"Тип данных": label.upper(), "Найденное значение": value})
         
-        # Сохраняем информацию о найденной сущности
-        found_pii.append({"Тип данных": label, "Найденное значение": value})
-        
-    # Возвращаем в правильном порядке
     return masked_text, sorted(found_pii, key=lambda x: text.find(x["Найденное значение"]))
 
 
 # --- ИНТЕРФЕЙС STREAMLIT ---
 
+# Устанавливаем конфигурацию страницы
+st.set_page_config(layout="wide", page_title="PII Детектор")
+
 # Применяем наши стили
 st.markdown(page_style, unsafe_allow_html=True)
 
-# Загружаем модель
-pii_pipeline = load_model(MODEL_PATH)
-
 # Заголовок
 st.title("Детектор персональных данных в логах")
-st.markdown("Введите текст лога для анализа и маскировки PII.")
 
-# Поле для ввода текста
-log_input = st.text_area(
-    "📝 Вставьте ваш лог сюда:",
-    height=250,
-    placeholder="Например: 2025-05-22 13:42:14 ERROR User request processed, email franklinjames@example.net, card 4851961064628792322..."
+# --- Боковая панель для настроек ---
+st.sidebar.header("⚙️ Настройки")
+selected_model_name = st.sidebar.radio(
+    "Выберите модель для анализа:",
+    options=list(MODELS.keys()), # Опции - это названия моделей
+    index=0 # Модель "Бейс" будет выбрана по умолчанию
 )
 
-# Кнопка для запуска анализа
-if st.button("🔍 Проанализировать и замаскировать"):
-    if pii_pipeline and log_input:
-        with st.spinner("Анализирую..."):
-            masked_text, found_pii = mask_log(pii_pipeline, log_input)
-            
-            st.subheader("🔒 Замаскированный лог")
-            st.markdown(f'<div class="result-box">{masked_text}</div>', unsafe_allow_html=True)
-            
-            if found_pii:
-                st.subheader("🔎 Найденные и скрытые данные")
-                # Выводим таблицу с найденными данными
-                st.dataframe(found_pii, use_container_width=True, hide_index=True)
-            else:
-                st.success("Персональные данные в этом логе не найдены.")
-    elif not log_input:
-        st.warning("Пожалуйста, введите текст для анализа.")
+# Получаем путь к выбранной модели
+model_path = MODELS[selected_model_name]
 
-st.markdown("---")
-st.info("Это приложение использует модель, дообученную для распознавания именованных сущностей (PII).")
+# Загружаем выбранную модель (результат будет взят из кэша, если модель уже загружалась)
+pii_pipeline = load_model(model_path)
+
+
+# --- Основная рабочая область ---
+col1, col2 = st.columns([2, 3]) # Делим экран на две колонки
+
+with col1:
+    st.subheader(f"Выбрана модель: **{selected_model_name}**")
+    
+    log_input = st.text_area(
+        "📝 Вставьте ваш лог сюда:",
+        height=400,
+        placeholder="Например: 2025-05-22 13:42:14 ERROR User request processed, email franklinjames@example.net, card 4851961064628792322..."
+    )
+
+    # Кнопка для запуска анализа
+    if st.button("🔍 Проанализировать и замаскировать"):
+        if pii_pipeline and log_input:
+            # Если кнопка нажата, результат будет в правой колонке
+            pass
+        elif not log_input:
+            st.warning("Пожалуйста, введите текст для анализа.")
+        else:
+            # Если модель не загрузилась
+            st.error("Модель не загружена. Проверьте сообщения об ошибках выше.")
+
+with col2:
+    st.subheader("🔒 Результат анализа")
+    # Эта часть будет обновляться только после нажатия кнопки
+    if pii_pipeline and log_input and 'masked_text' not in st.session_state:
+        st.session_state.masked_text = "Здесь появится замаскированный лог..."
+        st.session_state.found_pii = []
+        
+    if st.button("обработать", key="process_button_hidden_trigger"): # Хитрый способ для обновления
+        with st.spinner(f"Анализирую с помощью модели '{selected_model_name}'..."):
+            masked_text, found_pii = mask_log(pii_pipeline, log_input)
+            st.session_state.masked_text = masked_text
+            st.session_state.found_pii = found_pii
+    
+    # Всегда отображаем результат из st.session_state
+    if 'masked_text' in st.session_state:
+        st.markdown(f'<div class="result-box">{st.session_state.masked_text}</div>', unsafe_allow_html=True)
+        
+        if st.session_state.found_pii:
+            st.subheader("🔎 Найденные и скрытые данные")
+            st.dataframe(st.session_state.found_pii, use_container_width=True, hide_index=True)
+        # Убираем сообщение об успехе, если ничего не найдено, для чистоты интерфейса
+
+st.sidebar.markdown("---")
+st.sidebar.info("Это приложение позволяет сравнивать разные модели для распознавания PII.")
